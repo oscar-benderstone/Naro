@@ -1,0 +1,76 @@
+{
+   "abstract" : "Handy Tool for Marpa and Custom Languages",
+   "author" : [
+      "Oscar Bender-Stone <oscarbenderstone@gmail.com>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "App::ModuleBuildTiny version 0.038",
+   "license" : [
+      "mit"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "Naro",
+   "prereqs" : {
+      "configure" : {
+         "requires" : {
+            "Module::Build::Tiny" : "0.039"
+         }
+      },
+      "develop" : {
+         "requires" : {
+            "App::ModuleBuildTiny" : "0.038"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "App::Cmd::Setup" : "0",
+            "Carp" : "0",
+            "List::MoreUtils" : "0",
+            "constant" : "0",
+            "strict" : "0",
+            "warnings" : "0"
+         }
+      }
+   },
+   "provides" : {
+      "Naro" : {
+         "file" : "lib/Naro.pm",
+         "version" : "v0.1.0"
+      },
+      "Naro::Actions" : {
+         "file" : "lib/Naro/Actions.pm",
+         "version" : "v0.1.0"
+      },
+      "Naro::Command::adjoin" : {
+         "file" : "lib/Naro/Command/adjoin.pm",
+         "version" : "v0.1.0"
+      },
+      "Naro::DSL" : {
+         "file" : "lib/Naro/DSL.pm",
+         "version" : "v0.1.0"
+      },
+      "Naro::SyntaxExpander" : {
+         "file" : "lib/Naro/SyntaxExpander.pm",
+         "version" : "v0.1.0"
+      },
+      "analyze" : {
+         "file" : "lib/Naro/Command/analyze.pm",
+         "version" : "v0.1.0"
+      },
+      "expand" : {
+         "file" : "lib/Naro/Command/expand.pm",
+         "version" : "v0.1.0"
+      },
+      "process" : {
+         "file" : "lib/Naro/Command/process.pm",
+         "version" : "v0.1.0"
+      }
+   },
+   "release_status" : "unstable",
+   "version" : "v0.1.0",
+   "x_serialization_backend" : "JSON::PP version 4.07",
+   "x_spdx_expression" : "MIT"
+}
