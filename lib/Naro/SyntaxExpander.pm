@@ -118,7 +118,7 @@ Errors: if $multiple is less than 1, the function will automatically set n = 1.
 
 sub OptionalRules {
   my $self = shift;
-  my @opt_matches = $self->syntax =~ /\s_([\w\p{N}]*)\s(?!~|:)/g;
+  my @opt_matches = $self->syntax =~ /[^\'"]*\s_([\w\p{N}]*)\s(?!~|:)/g;
   for my $match (@opt_matches) {
     my $multiple = $match =~ (/[\p{N}]*/g)[0] // 1; 
     $match =~ s!$multiple\_!!;
@@ -187,7 +187,7 @@ Warning: two line_comments that collide will give a warning via AddRule.
 sub LineComment {
   my $self = shift;
   my @single_comment_matches = 
-    $self->syntax =~ /:discard\s*~\s*line_comment!\(.*\)/g;
+    $self->syntax =~ /[^\'"]*\:discard\s*~\s*line_comment!\(.*\)/g;
     for my $i (0 .. $#single_comment_matches) {
       my $comment_start = ($single_comment_matches[$i] =~ /\((.*)\)/g)[0];
       $_[0] =~ s/:discard\s*~\s*line_comment!\(.*\)/:discard ~ <line_comment_$i>/;
@@ -198,7 +198,7 @@ sub LineComment {
 
 sub MultilineComment {
   my $self = shift;
-  my @multiline_comment_matches = $self->syntax =~ /:discard\s*~\s*multiline_comment!\(.*\)/g;
+  my @multiline_comment_matches = $self->syntax =~ /[^\'"]*:\discard\s*~\s*multiline_comment!\(.*\)/g;
   for my $i (0 .. $#multiline_comment_matches) {
       print "My match: : $multiline_comment_matches[$i]\n";
       my @macro_params = quotewords(",",0,($_[0] =~ /\((.*)\)/g)[0]);
@@ -222,7 +222,7 @@ sub MultilineComment {
 
 sub ParensRule {
   my $self = shift;
-  my @matches = $self->syntax =~ /(\w*)\(([^)]*)\)/g;
+  my @matches = $self->syntax =~ /[^\'"]*(\w*)\(([^)]*)\)/g;
   foreach (my $i = 0; $i < scalar(@matches)-1; $i++) {
     my @lhs = $self->syntax =~ /(\w*)\s*::=.*$matches[$i+1]/g;
     my $new_rule = $matches[$i] // "<_$lhs[0]_parens_$i>";
