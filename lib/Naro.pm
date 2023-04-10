@@ -9,6 +9,7 @@ our $VERSION = 'v0.1.0';
 1;
 
 __END__
+#TODO: put README here and change to README.pod
 
 =pod
 

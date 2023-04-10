@@ -1,4 +1,4 @@
-package Naro::SyntaxExpander;
+package Naro::Syntax::Expander;
 
 use strict;
 use warnings;
@@ -9,7 +9,8 @@ our $VERSION = 'v0.1.0';
 sub new {
   my $class = shift;
   my $self = {
-    syntax => shift
+    syntax => shift,
+    verbose => shift,
   };
 
   bless $self, $class;
@@ -17,10 +18,16 @@ sub new {
   return $self;
 }
 
+#Standard constructors
 sub syntax {
   my $self = shift;
   $self->{syntax} = shift if (@_);
   $self->{syntax}
+}
+
+sub verbose {
+  my $self = shift;
+  $self->{verbose}
 }
 
 =over
@@ -67,9 +74,9 @@ pseudo rules either in the command line or in the actions file instead.
 
 sub Equals {
   my $self = shift;
+  print "Substituting equals...\n" if $self->verbose;
   $self->syntax =~ s/[^\'"]*\s(=|:=)/::=/g;
 }
-
 
 =over
 
@@ -82,6 +89,7 @@ Adds a L0 rule called _squote for single quotes.
 =cut
 sub SQuotes {
   my $self = shift;
+  print "Adding SQuotes...\n" if $self->verbose;
   $self->AddRule("_squote ~ [']");
 }
 
@@ -94,11 +102,26 @@ Adds a L0 rule called _dquote for double quotes.
 =back
 
 =cut
-  sub DQuotes {
-    my $self = shift;
-    $self->AddRule("_dquote ~ \"");
-  }
+sub DQuotes {
+  my $self = shift;
+  print "Adding DQuotes...\n" if $self->verbose;
+  $self->AddRule("_dquote ~ \"");
+}
 
+=over
+
+=item Quotes()
+
+Combines SQuotes and DQuotes
+
+=back
+
+=cut
+sub Quotes {
+  my $self = shift;
+  $self->SQuotes();
+  $self->DQuotes();
+}
 
 =over
 
@@ -118,12 +141,9 @@ Errors: if $multiple is less than 1, the function will automatically set n = 1.
 
 sub OptionalRules {
   my $self = shift;
-  my @opt_matches = $self->syntax =~ /[^\'"]*\s_([\w\p{N}]*)\s(?!~|:)/g;
+  my @opt_matches = $self->syntax =~ /[^\'"]*\s([^\s\n]*)\?\s(?!~|:)/g;
   for my $match (@opt_matches) {
-    my $multiple = $match =~ (/[\p{N}]*/g)[0] // 1; 
-    $match =~ s!$multiple\_!!;
-    $self->AddRule("_$match ::= . " . ("$match " x ($_[1]-1)) . $match);
-    $self->AddRule("_$match ::= ");
+    $self->syntax =~ s/3/2/g; 
   }
 }
 
@@ -144,14 +164,24 @@ Warning: two line_comments that collide will give a warning via AddRule.
 
 =cut
 
-
+sub LineComment {
+  my $self = shift;
+  my @single_comment_matches = 
+    $self->syntax =~ /[^\'"]*\:discard\s*~\s*line_comment!\(.*\)/g;
+  for my $i (0 .. $#single_comment_matches) {
+    my $comment_start = ($single_comment_matches[$i] =~ /\((.*)\)/g)[0];
+    $_[0] =~ s/:discard\s*~\s*line_comment!\(.*\)/:discard ~ <line_comment_$i>/;
+    $self->AddRule("\n<line_comment_$i> ~ \'$comment_start\' <non_new_line_$i>\n");
+    $self->AddRule("<non_new_line_$i> ~ [\\n]*\n");
+  }
+}
 
 =over
 
-=item C<MultlineComment($self)>
+=item C<MultiineComment($self)>
 
 Creates rules for a multiline comment with the macro 
-C<multiline_comment!($start_comment, $end_comment, $start_inner, $end_inner)>
+C<multiline_comment!($start_comment, $end_comment)>
 in C<$self->syntax>. It has the following parameters:
 
 =over
@@ -165,10 +195,6 @@ The start of the comment.
 
 The end of the comment
 
-=item
-
-=item inner_lhs
-  
 
 =back
 
@@ -183,19 +209,6 @@ Warning: two line_comments that collide will give a warning via AddRule.
 =back
 
 =cut
-
-sub LineComment {
-  my $self = shift;
-  my @single_comment_matches = 
-    $self->syntax =~ /[^\'"]*\:discard\s*~\s*line_comment!\(.*\)/g;
-    for my $i (0 .. $#single_comment_matches) {
-      my $comment_start = ($single_comment_matches[$i] =~ /\((.*)\)/g)[0];
-      $_[0] =~ s/:discard\s*~\s*line_comment!\(.*\)/:discard ~ <line_comment_$i>/;
-      $self->AddRule("\n<line_comment_$i> ~ \'$comment_start\' <non_new_line_$i>\n");
-      $self->AddRule("<non_new_line_$i> ~ [\\n]*\n");
-    }
-}
-
 sub MultilineComment {
   my $self = shift;
   my @multiline_comment_matches = $self->syntax =~ /[^\'"]*:\discard\s*~\s*multiline_comment!\(.*\)/g;
@@ -203,22 +216,45 @@ sub MultilineComment {
       print "My match: : $multiline_comment_matches[$i]\n";
       my @macro_params = quotewords(",",0,($_[0] =~ /\((.*)\)/g)[0]);
       s/\s+// foreach @macro_params;
-      my $comment_lhs = $macro_params[0];
-      my $comment_rhs = $macro_params[1];
-      my $inner_rhs = $macro_params[2];    
-      my $inner_lhs = $macro_params[3] || $inner_rhs;
-      print "Comment start at $i: $comment_lhs\n";
+      my $start_comment = $macro_params[0];
+      my $end_comment = $macro_params[1];
+      my $end_inner = chop($macro_params[1]);    
+      print "Comment start at $i: $start_comment\n";
         $self->syntax =~ s/:discard\s*~\s*multiline_comment!\(.*\)/:discard ~ <multiline_comment_$i>\n/;
-      Rule($self->syntax, "<multiline_comment_$i> ~ \'$comment_lhs\' <multiline_comment_char_$i> \'$comment_rhs\'
-<multiline_comment_char_$i> ~ <non_inner_lhs> <inner_prefixed> <final_inner_rhs>
-<non_inner_lhs> ~ [^$inner_lhs]*
+      Rule($self->syntax, "<multiline_comment_$i> ~ \'$start_comment\' <multiline_comment_char_$i> \'$end_comment\'
+<multiline_comment_char_$i> ~ <non_end_inner> <inner_prefixed> <final_end_inner>
+<non_end_inner> ~ [^$end_inner]*
 <inner_prefixed> ~ <inner_prefixed_char>*
-<inner_prefixed_char> ~ <inner_lhs> [^$comment_lhs] [^$inner_rhs]
-<inner_lhs> ~ [$inner_lhs]+
-<final_inner_rhs> ~ [$inner_rhs]*\n");
+<inner_prefixed_char> ~ <end_inner> [^$start_comment] [^$end_inner]
+<end_inner> ~ [$end_inner]+
+<final_end_inner> ~ [$end_inner]*\n");
     }
 }
 
+#TODO: add doc comments
+sub DocComment {
+  my $self = shift;
+
+}
+
+
+=over
+
+=item C<Multiple()>
+Expands C<n*rule> to C<rule ... rule> n-times, C<rule> is a G1 rule
+
+=back
+=cut
+sub Syntax::Multiple {
+  my @matches = $_[0] =~ /([\p{N}])*\*(\w*)/g;
+  @matches = grep defined, @matches;
+
+  foreach (my $i = 0; $i < scalar(@matches)-2; $i += 2) {
+    my $expansion = (($matches[$i+1]." ") x ($matches[$i]-1)) . $matches[$i+1];
+    my @subs = $_[0] =~ /$matches[$i]\*$matches[$i+1]/g;
+    $_[0] =~ s/$matches[$i]\*$matches[$i+1]/$expansion/;
+  }
+}
 
 sub ParensRule {
   my $self = shift;
@@ -236,6 +272,40 @@ sub MacroRule {
 
   $self->syntax =~ s/$macro_rule\!?/$macro_sub/g;
 }
+=over
 
+=item AllMacroRules
+
+Input: C<$self> and string containing statements of the form "macro! = _;". A macro
+definition may appearing on multiple lines but must end with a semicolon.
+A macro may begin anywhere in the string.
+
+Output: expand every macro in C<$self->syntax> with its corresponding definition
+
+Error: if a definition for a macro is not found, 
+
+=back
+=cut
+sub AllMacroRules {
+  my $self = shift;
+  my $macro_string = $_[1];
+  my @macro_pairs = $macro_string =~ /\s*([^\s\n]*)\s*=\s*([^;]*);/g;
+  for (my $i = 0; $i < scalar(@macro_pairs); $i++) {
+    if (not($macro_pairs[$i] || $macro_pairs[$i+1])) {
+      croak 'macro at index ', $i, ' is not defined';
+    } else {
+      $self->syntax =~ MacroRule($macro_pairs[$i], $macro_pairs[$i+1]);
+    }
+  }
+
+}
+
+sub test {
+  my $self = shift;
+}
+
+sub Tester {
+
+}
 
 1;

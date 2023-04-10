@@ -1,6 +1,6 @@
 #Naro 
 
-*Currently, this piece of software is in major development and is not fully implemented. Please expect breaking changes; I hope to have a working program by April 9, 2023.*
+*Currently, this piece of software is in major development and is not fully implemented. Please expect breaking changes. Originally, I was planning to have a working program by April 9, 2023, but that has now changed for the end of April.*
 
 [Marpa](https://metacpan.org/pod/Marpa::R2), created by Jeffery Kegler, allows anyone to parse CFG (Context Free Grammars) in perl. It will parse pretty much any syntax you give it. 
 
@@ -21,12 +21,12 @@ See CLI options using `--help` (NOT currently implemented).
 *This section is a work in progress.*
 
 
-##CPAN
+## CPAN
 
-##Build from Source
+## Build from Source
 
 
-#Why the name "Naro"?
+# Why the name "Naro"?
 
 Naro is shorthand for [Naropa](https://en.wikipedia.org/wiki/Naropa), who was a Buddhist Monk and the teacher of Marpa Lotsawa. Kegler named his program after ["Marpa the Translator."] (https://metacpan.org/pod/Marpa::R2#Why-is-it-called-"Marpa"?). Inspired by Kegler, I thought I would loosely carry out the same Buddhist theme.
 
@@ -36,7 +36,7 @@ Feel free to raise an issue to request new features.
 
 - [] Events: manage custom parsing for L0 rules with a list of events, similar to managing actions.
 
-#Contact
+# Contact
 
 **Author:** Oscar Bender-Stone
 
@@ -47,11 +47,11 @@ Feel free to raise an issue to request new features.
 **Main Website for Updates:** https://logsofhumanisticlogic.wordpress.com/
 
 
-#Contributing
+# Contributing
 *This is largely a work in progress. Please contact me if you would like to contribute. You can see new updates for the project at my blog: https://logsofhumanisticlogic.wordpress.com/.
 
 
-#COPYRIGHT AND LICENSE
+# COPYRIGHT AND LICENSE
 
 This software is Copyright (c) 2023 by Oscar Bender-Stone.
 

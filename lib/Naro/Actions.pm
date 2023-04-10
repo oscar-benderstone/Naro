@@ -4,14 +4,31 @@ use strict;
 use warnings;
 use Carp;
 use List::MoreUtils qw(uniq);
+use Text::ParseWords;
 
 our $VERSION = 'v0.1.0';
 
 # TODO: write documentation on error messages
 
+sub new {
+  my ($class, $args) = shift;
+  my $self = {
+    #Hash of array descriptors and their indicies
+    descriptors => quotewords(",", 0, $args->{syntax} = 2)
+  };
+  bless $self, $class;
+  return $self;
+}
+
+sub descriptors {
+  my $self = shift;
+  $self->{descriptors} = shift if (@_);
+  $self->{descriptors}
+}
+
 =over
 
-=item RelativeG1Position(@rhs_list, $starting_rule, $index)
+=item C<RelativeG1Position(@rhs_list, $starting_rule, $index)>
 
 Calculates the absolute index of a G1 rule relative to a specific index.
 
@@ -19,15 +36,15 @@ Inputs:
 
 =over
 
-=item @rhs_list
+=item C<@rhs_list>
 
 List of G1 rules appearing on the right hand side of another G1 rule.
 
-=item $starting_rule
+=item C<$starting_rule>
 
 The rule to calculate the relative position.
 
-=item $relative_index
+=item C<$relative_index>
 
 The desired index from the C<$starting_rule>.
 

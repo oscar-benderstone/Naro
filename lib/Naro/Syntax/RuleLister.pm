@@ -1,4 +1,4 @@
-package Naro::DSL;
+package Naro::Syntax::RuleLister;
 
 use strict;
 use warnings;
@@ -47,14 +47,13 @@ sub new {
   my ($class, $args) = @_;
   my $self = {
     syntax => $args->{syntax},
-    #Hash of descriptors and their locations in the syntax
-    descriptors => $args->{descriptors}, 
     #Array of rules and their locations in the syntax
-    rule_array => GetRuleList($args->{syntax}),
+    rules => GetRuleList($args->{syntax}),
+    verbose => $args->{verbose}
   };
 
   bless $self, $class;
-  return $self
+  return $self;
 }
 
 #Internal grammar and recee used to get rule_array
@@ -95,7 +94,9 @@ sub BracketRuleName {
 # Internal Ignore sub used only for the DSL
 sub Ignore { }
 
-# Lists all of the G1 rules appearing on the right hand side of a G1 rule.
+# Creates a hash with the following data:
+# - keys: G1 rules
+# - values: an array of G1 rules appearing on the right hand side of a G1 rule.
 sub ListRules {
   my (@ast) = @_;
 
@@ -117,76 +118,20 @@ sub ListRules {
   for (my $i = 0; $i < scalar(@tokens); $i++) {
     my @token_list = grep @{$rhs_list}[$_] =~ /$tokens[$i]/, 0..$#{$rhs_list};
 
-    if (scalar(@token_list) > 1) {
-      $rhs{$tokens[$i]} = [ @token_list ]; 
-    } else {
-      $rhs{$tokens[$i]} = $i;
-    }
+    scalar(@token_list) > 1 ? $rhs{$tokens[$i]} = [ @token_list ] : $rhs{$tokens[$i]} = $i; 
   }
 
   return {$lhs => {%rhs}};
 }
 
-sub GetRuleList {
+sub SetRuleList {
   my $self = shift;
   try {
     $self->marpa_recee->read(\$self->syntax);
-    return ${$self->marpa_recce->value};
+    print ${$self->marpa_recce->value}, "\n" if $self->{verbose};
   } catch {
-    warn "Error detected: $_";
+    warn "Error: $_";
   }
 }
-
-
-#TODO: provide instructions on how to construct a module that includes
-#Actions.pm
-=over
-
-=item AddActionHash($action)
-
-Input: hash with rules as keys and the names of subroutines as values
-
-Output: changes syntax to have an action at the end of the rule declaration.
-
-Slient error: if the rule name is not found, an error is reported
-
-=back
-
-=cut
-
-sub AddActionHash {
-  my (%action_hash) = @_;
-
-  for my $rule (keys %action_hash) {
-    AddAction($rule, %action_hash{$rule});
-  }
-}
-
-=over
-
-=item AddAction($action)
-
-Input: G1 rule name and action
-
-Output: changes syntax to have an action at the end of the rule declaration.
-
-Slient error: if the rule name is not found, an error is reported
-
-=back
-
-=cut
-sub AddAction {
-  my $self = shift;
-
-  my @match = $self->syntax =~ /[^\'"]*(<)?$_[1](>)?\s*::=([^\n]*)/g;
- 
-  if ($match[0]) {
-    $self->{syntax} =~ s/$match[0]/$match[0] action => $_[2]/;
-  } else {
-    warn "Rule \"$_[1]\" was not found in the syntax. No actions were added.";
-  }
-}
-
-
 
 1;
