@@ -1,5 +1,7 @@
 package Naro::CommandUtils::List;
 
+our $VERSION = 'v0.2.0';
+
 use strict;
 use warnings;
 use Naro::Syntax::RuleLister;

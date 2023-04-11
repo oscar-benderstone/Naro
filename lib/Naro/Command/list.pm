@@ -4,7 +4,8 @@ use strict;
 use warnings;
 use Naro::CommandUtils::List;
 
-our $VERSION = 'v0.1.0';
+
+our $VERSION = 'v0.2.0';
 
 sub description {
   "Creates a hash of rules as keys and arrays the corresponding G1 rules on the right hand side as values."

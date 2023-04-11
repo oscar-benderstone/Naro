@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use App::Cmd::Setup -command;
 
+our $VERSION = 'v0.2.0';
+
 sub opt_spec {
   my ($class, $app) = @_;
   return (
@@ -28,19 +30,21 @@ sub validate_args {
   $self->validate($opt, $args);
 }
 
-#Gets text (either a syntax, actions list, or pseudo rule list) by checking the inline flag
+#Gets text (either a syntax, actions list, or text file of pseudo rules) by checking the inline flag
+#If the inline flag is true, the text given in Naro is directly used; otherwies, Naro attempts
+#to open a file
 sub get_text {
-  my ($self, $opt, $args) = @_; 
+  my ($self, $opt, $source) = @_;
 
-  my $syntax;
+  my $text;
 
   try {
     if ($opt->{inline}) {
-      $syntax = $args->[0];
+      $text = $source;
     } else {
-      open my $TEXT, '<', $args->[0];
+      open my $TEXT, '<', $source;
       while(<$TEXT>) {
-        $syntax .= $_;
+        $text .= $_;
       }
       close $TEXT;
     }
@@ -48,16 +52,15 @@ sub get_text {
     warn "$_";
   }
   
-  return $syntax;
+  return $text;
 }
-
 
 sub execute {
   my ($self, $opt, $args) = @_; 
 
-  my $syntax = get_syntax($args->[0]);
+  @$args = map $self->get_text($opt, $_), @$args;
 
-  $self->execute_inner($self, $opt, $syntax, $args->[1]);
+  $self->execute_inner($self, $opt, $args);
 }
 
 1;

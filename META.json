@@ -4,7 +4,7 @@
       "Oscar Bender-Stone <oscarbenderstone@gmail.com>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "App::ModuleBuildTiny version 0.038",
+   "generated_by" : "App::ModuleBuildTiny version 0.039",
    "license" : [
       "mit"
    ],
@@ -21,7 +21,7 @@
       },
       "develop" : {
          "requires" : {
-            "App::ModuleBuildTiny" : "0.038"
+            "App::ModuleBuildTiny" : "0.039"
          }
       },
       "runtime" : {
@@ -29,6 +29,8 @@
             "App::Cmd::Setup" : "0",
             "Carp" : "0",
             "List::MoreUtils" : "0",
+            "Naro::SyntaxExpander" : "0",
+            "Text::ParseWords" : "0",
             "constant" : "0",
             "strict" : "0",
             "warnings" : "0"
@@ -38,39 +40,47 @@
    "provides" : {
       "Naro" : {
          "file" : "lib/Naro.pm",
-         "version" : "v0.1.0"
+         "version" : "v0.2.0"
       },
       "Naro::Actions" : {
-         "file" : "lib/Naro/Actions.pm",
-         "version" : "v0.1.0"
+         "file" : "lib/Naro/Actions.pm"
+      },
+      "Naro::Command" : {
+         "file" : "lib/Naro/Command.pm"
       },
       "Naro::Command::adjoin" : {
-         "file" : "lib/Naro/Command/adjoin.pm",
-         "version" : "v0.1.0"
+         "file" : "lib/Naro/Command/adjoin.pm"
       },
-      "Naro::DSL" : {
-         "file" : "lib/Naro/DSL.pm",
-         "version" : "v0.1.0"
+      "Naro::Command::expand" : {
+         "file" : "lib/Naro/Command/expand.pm"
       },
-      "Naro::SyntaxExpander" : {
-         "file" : "lib/Naro/SyntaxExpander.pm",
-         "version" : "v0.1.0"
+      "Naro::Command::list" : {
+         "file" : "lib/Naro/Command/list.pm"
       },
-      "analyze" : {
-         "file" : "lib/Naro/Command/analyze.pm",
-         "version" : "v0.1.0"
+      "Naro::Command::process" : {
+         "file" : "lib/Naro/Command/process.pm"
       },
-      "expand" : {
-         "file" : "lib/Naro/Command/expand.pm",
-         "version" : "v0.1.0"
+      "Naro::CommandUtils::Adjoin" : {
+         "file" : "lib/Naro/CommandUtils/Adjoin.pm"
       },
-      "process" : {
-         "file" : "lib/Naro/Command/process.pm",
-         "version" : "v0.1.0"
+      "Naro::CommandUtils::Expand" : {
+         "file" : "lib/Naro/CommandUtils/Expand.pm"
+      },
+      "Naro::CommandUtils::List" : {
+         "file" : "lib/Naro/CommandUtils/List.pm"
+      },
+      "Naro::Syntax::Adjoiner" : {
+         "file" : "lib/Naro/Syntax/Adjoiner.pm"
+      },
+      "Naro::Syntax::Expander" : {
+         "file" : "lib/Naro/Syntax/Expander.pm"
+      },
+      "Naro::Syntax::RuleLister" : {
+         "file" : "lib/Naro/Syntax/RuleLister.pm"
       }
    },
-   "release_status" : "unstable",
-   "version" : "v0.1.0",
-   "x_serialization_backend" : "JSON::PP version 4.07",
+   "release_status" : "stable",
+   "version" : "v0.2.0",
+   "x_serialization_backend" : "JSON::PP version 4.16",
    "x_spdx_expression" : "MIT"
 }

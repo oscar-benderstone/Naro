@@ -3,8 +3,9 @@ package Naro::Syntax::RuleLister;
 use strict;
 use warnings;
 use Carp;
+use Marpa::R2;
 
-our $VERSION = 'v0.1.0';
+our $VERSION = 'v0.2.0';
 
 use constant marpa_syntax => << 'SYNTAX';
 :default ::= action => ::array

@@ -1,5 +1,7 @@
 package Naro::Syntax::Adjoiner;
 
+our $VERSION = 'v0.2.0';
+
 #TODO: provide instructions on how to construct a module that includes
 #Actions.pm
 =over
@@ -44,3 +46,19 @@ sub AddAction {
     warn "Rule \"$_[1]\" was not found in the syntax. No actions were added.";
 }
 1;
+
+
+=over
+
+Input: C<$self> and input/file name with pseudo rules
+
+Output: C<$self> concatenated with the pseduo rules 
+
+=back
+
+=cut
+sub AddPseudoRules {
+  my $self = shift;
+
+  $self .= $_[1];
+}

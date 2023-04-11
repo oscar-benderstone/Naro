@@ -2,12 +2,14 @@ package Naro::CommandUtils::Expand;
 
 use Naro::Syntax::Expander;
 
+our $VERSION = 'v0.2.0';
+
 sub options {
   (
     [ 'equals', 'change =/:= used in rule declarations to ::='], 
     [ 'quotes', 'adds a new rule for quotes if "_squote" or "_dquote" are found'],
     [ 'parens', 'adds a new rule if _parens_* appears'],
-    [ 'opts', 'declares any instance of _opt_* as an optional rule'],
+    [ 'opts', 'declares any instance of *? as an optional rule called _opt_*'],
     [ 'multiples', 'expands any rules of the form n*_'],
     [ 'comments', 'create comments if either "line_comment!" or "multiline_comment!" are found'],
     [ 'macro', 'expands any macros from an input file'],
@@ -62,4 +64,3 @@ sub execute {
 
 }
 1;
-

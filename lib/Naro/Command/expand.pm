@@ -5,7 +5,7 @@ use warnings;
 use Naro -command;
 use Naro::SyntaxExpander;
 
-our $VERSION = 'v0.1.0';
+our $VERSION = 'v0.2.0';
 
 sub options {
   ExpandBase::options();

@@ -2,6 +2,8 @@ package Naro::CommandUtils::Adjoin;
 
 use Naro::Syntax::Adjoiner;
 
+our $VERSION = 'v0.2.0';
+
 sub options {
   (
     ["inline", "Insert rule and action pairs directly. Default: set to false;
@@ -15,8 +17,12 @@ sub validate {
 }
 
 sub execute {
-  my ($self, $opt, $syntax) = @_;
+  my ($self, $opt, $args) = @_;
 
+  
+
+
+ 
   
     
 }

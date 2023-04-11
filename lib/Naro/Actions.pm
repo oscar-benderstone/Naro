@@ -6,15 +6,17 @@ use Carp;
 use List::MoreUtils qw(uniq);
 use Text::ParseWords;
 
-our $VERSION = 'v0.1.0';
+our $VERSION = 'v0.2.0';
 
-# TODO: write documentation on error messages
+# TODO: write documentation on error messages and subs
 
 sub new {
   my ($class, $args) = shift;
   my $self = {
-    #Hash of array descriptors and their indicies
-    descriptors => quotewords(",", 0, $args->{syntax} = 2)
+    #Hash of array descriptors and their indices
+    descriptors => quotewords(",", 0, $args->{syntax}),
+    #Array of rules
+    rules => $args->{rules}
   };
   bless $self, $class;
   return $self;
@@ -84,7 +86,7 @@ Ignores the current data at a given G1 rule.
 =back
 
 =cut
-  sub Ignore {}
+sub Ignore {}
 
 =over
 
@@ -110,11 +112,11 @@ Output: the value of the AST at the given index.
 =back
 
 =cut
-  sub Return {
-    my (@ast, $index) = @_;
+sub Return {
+  my (@ast, $index) = @_;
 
-    return $ast[$index];
-  }
+  return $ast[$index];
+}
 
 =over
 

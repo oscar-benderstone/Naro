@@ -6,7 +6,7 @@ use Naro::CommandUtils::Expand;
 use Naro::CommandUtils::Adjoin;
 use Naro::CommandUtils::List;
 
-our $VERSION = 'v0.1.0';
+our $VERSION = "v0.2.0";
 
 sub description {
   "Combines the functionality and options of
