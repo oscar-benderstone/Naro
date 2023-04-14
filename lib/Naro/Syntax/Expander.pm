@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Carp;
 
-our $VERSION = 'v0.2.0';
+our $VERSION = 'v0.3.0';
 
 sub new {
   my $class = shift;
@@ -30,6 +30,25 @@ sub verbose {
   $self->{verbose}
 }
 
+
+=item CheckRule($rule)
+
+Input: C<$self> and a rule.
+
+Output: throws an exception if the rule is found in C<$self->syntax>
+and 1 otherwise.
+
+=back
+
+=cut
+sub CheckRule {
+  my $self = shift;
+  my $rule = $_[1];
+  $self->syntax !~ /$_[1]/ ? return 0 :
+    croak "Rule $_[1] is already in the syntax\n";
+}
+
+
 =over
 
 =item AddRule($rule)
@@ -49,13 +68,32 @@ Errors: the function aborts if C<$rule> is already in the syntax.
 sub AddRule {
   my $self = shift;
   my $rule = $_[1];
-  if ($self->syntax =~ /$_[1]/) {
-    croak "Error: this rule is already in the syntax: $_[1]\n";
-  } else {
-    $self->syntax .= $_[1];
-  } 
+  $self->CheckRule(/$rule/);
+  $self->{syntax} .= $rule;
 }
 
+=over
+
+=item ChangeRule($new rule)
+
+Change any instance of C<$new_rule> with C<$old_rule>.
+
+Warnings: this function will throw an exception if 
+
+=back
+
+=cut
+
+sub ChangeRule {
+  my $self = shift;
+  my $old_rule = $_[1];
+  my $new_rule = $_[2];
+  if ($self->{syntax} =~ /$_[1]/) {
+    croak "Rule $old_rule not found in the syntax";
+  } else {
+     $self->{syntax} =~ s/$_[1]/$_[2]/;
+  }
+ }
 
 =over
 
@@ -68,6 +106,8 @@ Warning: make sure not to include any pseudo-rules within the input syntax!
 Equals does not give a warning, and Marpa will give you an error! Put any
 pseudo rules either in the command line or in the actions file instead.
 
+Todo: this function only works if each rule in the syntax is on a differnet line.
+
 =back
 
 =cut
@@ -75,7 +115,8 @@ pseudo rules either in the command line or in the actions file instead.
 sub Equals {
   my $self = shift;
   print "Substituting equals...\n" if $self->verbose;
-  $self->syntax =~ s/[^\'"]*\s(=|:=)/::=/g;
+  my @matches = $self->{syntax} =~ /[^\'"]*\s(=|:=)/g;
+  $self->{syntax} =~ s/$_/::=/g foreach @matches;
 }
 
 =over
@@ -147,6 +188,15 @@ sub OptionalRules {
   }
 }
 
+sub TOptionalRules {
+  my @opt_matches = $_[0] =~ /[^\'"]*\s([^\s\n]*)\?\s(?!~|:)/g;
+  for my $match (@opt_matches) {
+    $_[0] =~ s/$match\?//;
+  }
+
+}
+
+
 =over
 
 =item LineComment($self)
@@ -167,7 +217,7 @@ Warning: two line_comments that collide will give a warning via AddRule.
 sub LineComment {
   my $self = shift;
   my @single_comment_matches = 
-    $self->syntax =~ /[^\'"]*\:discard\s*~\s*line_comment!\(.*\)/g;
+    $self->{syntax} =~ /[^\'"]*\:discard\s*~\s*line_comment!\(.*\)/g;
   for my $i (0 .. $#single_comment_matches) {
     my $comment_start = ($single_comment_matches[$i] =~ /\((.*)\)/g)[0];
     $_[0] =~ s/:discard\s*~\s*line_comment!\(.*\)/:discard ~ <line_comment_$i>/;

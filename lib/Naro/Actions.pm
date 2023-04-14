@@ -6,7 +6,7 @@ use Carp;
 use List::MoreUtils qw(uniq);
 use Text::ParseWords;
 
-our $VERSION = 'v0.2.0';
+our $VERSION = 'v0.3.0';
 
 # TODO: write documentation on error messages and subs
 

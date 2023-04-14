@@ -2,25 +2,29 @@ package Naro::Command::list;
 
 use strict;
 use warnings;
-use Naro::CommandUtils::List;
+use Naro -command;
 
 
-our $VERSION = 'v0.2.0';
+our $VERSION = 'v0.3.0';
+
+sub abstract {
+  "creates hash of lhs rule declarations and rhs rules"
+}
 
 sub description {
   "Creates a hash of rules as keys and arrays the corresponding G1 rules on the right hand side as values."
 }
 
 sub options {
-  List::options();
+  Naro::CommandUtils::List::options();
 }
 
 sub validate {
   my ($opt, $args) = @_; 
-  List::validate($opt, $args);
+  Naro::CommandUtils::List::validate($opt, $args);
 }
 
 sub execute_inner {
-  my ($self, $opt, $syntax) = @_;
-  List::execute($self, $opt, get_syntax$args->[0]));
+  my ($self, $opt, $args) = @_;
+  Naro::CommandUtils::List::execute($self, $opt, $args);
 }

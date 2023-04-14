@@ -2,11 +2,13 @@ package Naro::Command::process;
 
 use strict;
 use warnings;
-use Naro::CommandUtils::Expand;
-use Naro::CommandUtils::Adjoin;
-use Naro::CommandUtils::List;
+use Naro -command;
 
-our $VERSION = "v0.2.0";
+our $VERSION = 'v0.3.0';
+
+sub abstract {
+  "combination of adjoin, expand, and list"
+}
 
 sub description {
   "Combines the functionality and options of
@@ -15,22 +17,22 @@ sub description {
 
 sub options {
   (
-    CommandUtils::Expand::options(), 
-    CommandUtils::Adjoin::options(), 
-    CommandUtils::List::options()
+    Naro::CommandUtils::Expand::options(), 
+    Naro::CommandUtils::Adjoin::options(), 
+    Naro::CommandUtils::List::options()
   )
 }
 
 sub validate {
   my ($self, $args) = @_; 
-  Expander::validate($self, $args);
-  Adjoin::validate($self, $args);
-  List::validate($self, $args);
+  Naro::CommandUtils::Expander::validate($self, $args);
+  Naro::CommandUtils::Adjoin::validate($self, $args);
+  Naro::CommandUtils::List::validate($self, $args);
 }
 
 sub execute_inner {
   my ($self, $opt, $syntax, $arg) = @_;
-  ExpandBase::execute($self, $opt, $syntax);
-  AdjoinBase::execute($self, $opt, $arg);
-  List::execute($self, $opt, $syntax);
+  Naro::CommandUtils::ExpandBase::execute($self, $opt, $syntax);
+  Naro::CommandUtils::AdjoinBase::execute($self, $opt, $arg);
+  Naro::CommandUtils::List::execute($self, $opt, $syntax);
 }

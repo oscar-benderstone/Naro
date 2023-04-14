@@ -2,24 +2,28 @@ package Naro::Command::adjoin;
 
 use strict;
 use warnings;
-use Naro::CommandUtils::Adjoin;
+use Naro -command;
 
-our $VERSION = 'v0.2.0';
+our $VERSION = 'v0.3.0';
+
+sub abstract {
+  "add actions and other items to syntax"
+}
 
 sub description {
-  "Adjoin actions to each corresponding rule in the given syntax."
+  "add actions to each corresponding rule in the given syntax."
 }
 
 sub options {
-  AdjoinBase::options();
+  Naro::CommandUtils::AdjoinBase::options()
 }
 
 sub validate {
   my ($opt, $args) = @_; 
-  Adjoin::validate($opt, $args);
+  Naro::CommandUtils::Adjoin::validate($opt, $args);
 }
 
 sub execute {
   my ($self, $opt, $args) = @_;
-  Adjoin::execute($self, $opt, $args);
+  Naro::CommandUtils::Adjoin::execute($self, $opt, $args);
 }

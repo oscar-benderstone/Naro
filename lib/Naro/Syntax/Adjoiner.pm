@@ -1,6 +1,14 @@
 package Naro::Syntax::Adjoiner;
 
-our $VERSION = 'v0.2.0';
+our $VERSION = 'v0.3.0';
+
+
+sub new {
+  my $class = shift;
+  my $self = {
+    syntax => shift,
+  }
+}
 
 #TODO: provide instructions on how to construct a module that includes
 #Actions.pm
@@ -60,5 +68,5 @@ Output: C<$self> concatenated with the pseduo rules
 sub AddPseudoRules {
   my $self = shift;
 
-  $self .= $_[1];
+  $self->{syntax} .= $_[1];
 }
