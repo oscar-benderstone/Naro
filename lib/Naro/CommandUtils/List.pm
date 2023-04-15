@@ -1,6 +1,6 @@
 package Naro::CommandUtils::List;
 
-our $VERSION = 'v0.3.0';
+our $VERSION = 'v0.4.0';
 
 use strict;
 use warnings;
@@ -8,7 +8,7 @@ use Naro::Syntax::RuleLister;
 
 sub options {
   (
-    ["inline=s|ir", "Insert rule and action pairs directly. Default: set to false;
+    ["inline|ir=s", "Insert rule and action pairs directly. Default: set to false;
       requires using a file storing these pairs as the second parameter."],
   )
 }

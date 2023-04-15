@@ -4,14 +4,14 @@ use strict;
 use warnings;
 use Naro -command;
 
-our $VERSION = 'v0.3.0';
+our $VERSION = 'v0.4.0';
 
 sub abstract {
   "add actions and other items to syntax"
 }
 
 sub description {
-  "add actions to each corresponding rule in the given syntax."
+  "add actions to each corresponding rule in the given syntax"
 }
 
 sub options {

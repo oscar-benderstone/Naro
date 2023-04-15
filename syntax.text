@@ -1,6 +1,0 @@
-expression = ident int | ident string
-ident = "begin"
-string = 3*char
-int = 3*digit
-char = "a"
-digit ~ '0' | '1'

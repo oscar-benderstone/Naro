@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Carp;
 
-our $VERSION = 'v0.3.0';
+our $VERSION = 'v0.4.0';
 
 sub new {
   my $class = shift;
@@ -43,9 +43,10 @@ and 1 otherwise.
 =cut
 sub CheckRule {
   my $self = shift;
-  my $rule = $_[1];
-  $self->syntax !~ /$_[1]/ ? return 0 :
-    croak "Rule $_[1] is already in the syntax\n";
+  my $rule = $_[0];
+  croak "Rule $rule not found in the syntax" unless ($rule);
+  $self->syntax !~ /$_[0]/ ? return 0 :
+    croak "Rule $_[0] is already in the syntax\n";
 }
 
 
@@ -67,8 +68,8 @@ Errors: the function aborts if C<$rule> is already in the syntax.
 
 sub AddRule {
   my $self = shift;
-  my $rule = $_[1];
-  $self->CheckRule(/$rule/);
+  my $rule = $_[0];
+  $self->CheckRule($rule);
   $self->{syntax} .= $rule;
 }
 
@@ -86,14 +87,13 @@ Warnings: this function will throw an exception if
 
 sub ChangeRule {
   my $self = shift;
-  my $old_rule = $_[1];
-  my $new_rule = $_[2];
-  if ($self->{syntax} =~ /$_[1]/) {
-    croak "Rule $old_rule not found in the syntax";
-  } else {
-     $self->{syntax} =~ s/$_[1]/$_[2]/;
-  }
- }
+  my $old_rule = $_[0];
+  my $new_rule = $_[1];
+
+  $self->{syntax} =~ /$old_rule/ ?
+    $self->{syntax} =~ s/$old_rule/$new_rule/g
+    : croak "Rule $old_rule not found in syntax";
+}
 
 =over
 
@@ -103,8 +103,9 @@ Changes any =, := signs that do not appear in quotes or brackets
 to ::=.
 
 Warning: make sure not to include any pseudo-rules within the input syntax!
-Equals does not give a warning, and Marpa will give you an error! Put any
-pseudo rules either in the command line or in the actions file instead.
+Equals does not give a warning, and Marpa will give you an error! Instead, add any
+pseudo rules through 'adjoin',
+either directly inline or in the actions file.
 
 Todo: this function only works if each rule in the syntax is on a differnet line.
 
@@ -114,9 +115,23 @@ Todo: this function only works if each rule in the syntax is on a differnet line
 
 sub Equals {
   my $self = shift;
-  print "Substituting equals...\n" if $self->verbose;
-  my @matches = $self->{syntax} =~ /[^\'"]*\s(=|:=)/g;
-  $self->{syntax} =~ s/$_/::=/g foreach @matches;
+
+  print "Substituting equals..." if $self->verbose;
+
+  #Gets every instance of characters before =/:= and =/:= itself
+  #Before any G1 rule declaration, there can be any number of spaces/newlines,
+  #the rule name itself (either any mix of \_ or \w) and additional
+  #spaces/newlines.
+  #The [^\'"] in the regex ensures anything in quotes is NOT changed
+  my @matches = $self->{syntax} =~ /[^\'"]([\s\n]*[\_\w]*[\s\n]*)(=|:=)/g;
+
+  for (my $i = 0; $i < 2+scalar(@matches)/2; $i += 2) {
+    
+    my $match_value = "$matches[$i]$matches[$i+1]";
+
+    $self->{syntax} =~ s/$match_value/$matches[$i]::=/;
+  }
+
 }
 
 =over
@@ -131,7 +146,7 @@ Adds a L0 rule called _squote for single quotes.
 sub SQuotes {
   my $self = shift;
   print "Adding SQuotes...\n" if $self->verbose;
-  $self->AddRule("_squote ~ [']");
+  $self->AddRule("_squote ~ [']\n");
 }
 
 =over
@@ -146,7 +161,7 @@ Adds a L0 rule called _dquote for double quotes.
 sub DQuotes {
   my $self = shift;
   print "Adding DQuotes...\n" if $self->verbose;
-  $self->AddRule("_dquote ~ \"");
+  $self->AddRule("_dquote ~ \"\n");
 }
 
 =over
@@ -166,7 +181,7 @@ sub Quotes {
 
 =over
 
-=item OptionalToken($rule)
+=item OptionalRules($rule)
 
 
 Inputs: name of G1 rule. This token may include a number
@@ -180,22 +195,17 @@ Errors: if $multiple is less than 1, the function will automatically set n = 1.
 
 =cut
 
+#TODO: finish implementing this function!
 sub OptionalRules {
   my $self = shift;
-  my @opt_matches = $self->syntax =~ /[^\'"]*\s([^\s\n]*)\?\s(?!~|:)/g;
+
+  my @opt_matches = $self->syntax =~ /[^\'"]\s([^\s\n]*)\?\s(?!~|:)/g;
+
   for my $match (@opt_matches) {
-    $self->syntax =~ s/3/2/g; 
+    $self->syntax =~ s/$match/_opt_$match/g; 
+    $self->AddRule("_opt_$match");
   }
 }
-
-sub TOptionalRules {
-  my @opt_matches = $_[0] =~ /[^\'"]*\s([^\s\n]*)\?\s(?!~|:)/g;
-  for my $match (@opt_matches) {
-    $_[0] =~ s/$match\?//;
-  }
-
-}
-
 
 =over
 
@@ -205,7 +215,7 @@ Creates a single line comment with the macro C<line_comment!($start)>
 in C<$self->syntax>, where C<$start> is the desired start of each line comment.
 Marpa automatically discards these comments while parsing.
 Every syntax can have multiple kinds of single line comments, as long as they start
-with a different set of symbols.
+with a different set of symbols. For C++-style comments, use the macro C<line_comment!(//)>.
 
 Warning: two line_comments that collide will give a warning via AddRule.
 
@@ -216,12 +226,22 @@ Warning: two line_comments that collide will give a warning via AddRule.
 
 sub LineComment {
   my $self = shift;
-  my @single_comment_matches = 
+
+  my @line_comment_matches = 
     $self->{syntax} =~ /[^\'"]*\:discard\s*~\s*line_comment!\(.*\)/g;
-  for my $i (0 .. $#single_comment_matches) {
-    my $comment_start = ($single_comment_matches[$i] =~ /\((.*)\)/g)[0];
+
+  croak "The macro \"line_comment!\" was not found in syntax" unless (@line_comment_matches);
+
+  print "Adding line comment..." if $self->verbose;
+
+  for my $i (0 .. $#line_comment_matches) {
+
+    my $comment_start = ($line_comment_matches[$i] =~ /\((.*)\)/g)[0];
+
     $_[0] =~ s/:discard\s*~\s*line_comment!\(.*\)/:discard ~ <line_comment_$i>/;
+
     $self->AddRule("\n<line_comment_$i> ~ \'$comment_start\' <non_new_line_$i>\n");
+     
     $self->AddRule("<non_new_line_$i> ~ [\\n]*\n");
   }
 }
@@ -251,7 +271,7 @@ The end of the comment
 
 Marpa automatically discards these comments while parsing.
 Every syntax can have multiple kinds of single line comments, as long as they start
-with a different set of symbols. For C style comments, use the macro C<multiline_comment!(/*, */, *)>.
+with a different set of symbols. For C-style comments, use the macro C<multiline_comment!(/*, */, *)>.
 
 Warning: two line_comments that collide will give a warning via AddRule.
 
@@ -261,16 +281,31 @@ Warning: two line_comments that collide will give a warning via AddRule.
 =cut
 sub MultilineComment {
   my $self = shift;
-  my @multiline_comment_matches = $self->syntax =~ /[^\'"]*:\discard\s*~\s*multiline_comment!\(.*\)/g;
+
+    my @multiline_comment_matches = $self->syntax =~ /[^\'"]*:\discard\s*~\s*multiline_comment!\(.*\)/g;
+  
+  croak "The macro \"multiline_comment!\" was not found in syntax" unless (@multiline_comment_matches);
+
+  print "Adding multiline comments..." if $self->{verbose};
+
   for my $i (0 .. $#multiline_comment_matches) {
-      print "My match: : $multiline_comment_matches[$i]\n";
+      #Get parameters from macro
       my @macro_params = quotewords(",",0,($_[0] =~ /\((.*)\)/g)[0]);
+     
+      #Remove spaces in macro parameters
       s/\s+// foreach @macro_params;
+      
+      #Get the start, end, and inner parameters  
       my $start_comment = $macro_params[0];
+      
       my $end_comment = $macro_params[1];
+      
       my $end_inner = chop($macro_params[1]);    
-      print "Comment start at $i: $start_comment\n";
-        $self->syntax =~ s/:discard\s*~\s*multiline_comment!\(.*\)/:discard ~ <multiline_comment_$i>\n/;
+
+      #Change the discard pseudorule to use the new multilne_comment rule
+      $self->syntax =~ s/:discard\s*~\s*multiline_comment!\(.*\)/:discard ~ <multiline_comment_$i>\n/;
+
+      #Add the multiline comment at the end of syntax
       Rule($self->syntax, "<multiline_comment_$i> ~ \'$start_comment\' <multiline_comment_char_$i> \'$end_comment\'
 <multiline_comment_char_$i> ~ <non_end_inner> <inner_prefixed> <final_end_inner>
 <non_end_inner> ~ [^$end_inner]*
@@ -287,15 +322,14 @@ sub DocComment {
 
 }
 
-
 =over
 
-=item C<Multiple()>
+=item C<Repetitions()>
 Expands C<n*rule> to C<rule ... rule> n-times, C<rule> is a G1 rule
 
 =back
 =cut
-sub Syntax::Multiple {
+sub Repetitions {
   my @matches = $_[0] =~ /([\p{N}])*\*(\w*)/g;
   @matches = grep defined, @matches;
 
@@ -306,21 +340,22 @@ sub Syntax::Multiple {
   }
 }
 
-sub ParensRule {
+sub GroupingRule {
   my $self = shift;
-  my @matches = $self->syntax =~ /[^\'"]*(\w*)\(([^)]*)\)/g;
+  my @matches = $self->{syntax} =~ /[^\'"]*(\w*)\(([^)]*)\)/g;
   foreach (my $i = 0; $i < scalar(@matches)-1; $i++) {
-    my @lhs = $self->syntax =~ /(\w*)\s*::=.*$matches[$i+1]/g;
+    my @lhs = $self->{syntax} =~ /(\w*)\s*::=.*$matches[$i+1]/g;
     my $new_rule = $matches[$i] // "<_$lhs[0]_parens_$i>";
+    $self->{syntax} .= $new_rule;
   }
 }
 
 sub MacroRule {
   my $self = shift;
-  my $macro_rule = $_[1];
-  my $macro_sub = $_[2];
+  my $macro_rule = $_[0];
+  my $macro_sub = $_[1];
 
-  $self->syntax =~ s/$macro_rule\!?/$macro_sub/g;
+  $self->{syntax} =~ s/$macro_rule\!?/$macro_sub/g;
 }
 =over
 
@@ -338,8 +373,9 @@ Error: if a definition for a macro is not found,
 =cut
 sub AllMacroRules {
   my $self = shift;
-  my $macro_string = $_[1];
+  my $macro_string = $_[0];
   my @macro_pairs = $macro_string =~ /\s*([^\s\n]*)\s*=\s*([^;]*);/g;
+  print "My macro pairs: ", Data::Dump::dump(@macro_pairs), "\n";
   for (my $i = 0; $i < scalar(@macro_pairs); $i++) {
     if (not($macro_pairs[$i] || $macro_pairs[$i+1])) {
       croak 'macro at index ', $i, ' is not defined';
@@ -347,14 +383,6 @@ sub AllMacroRules {
       $self->syntax =~ MacroRule($macro_pairs[$i], $macro_pairs[$i+1]);
     }
   }
-
-}
-
-sub test {
-  my $self = shift;
-}
-
-sub Tester {
 
 }
 

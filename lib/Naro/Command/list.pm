@@ -5,14 +5,14 @@ use warnings;
 use Naro -command;
 
 
-our $VERSION = 'v0.3.0';
+our $VERSION = 'v0.4.0';
 
 sub abstract {
   "creates hash of lhs rule declarations and rhs rules"
 }
 
 sub description {
-  "Creates a hash of rules as keys and arrays the corresponding G1 rules on the right hand side as values."
+  "creates a hash of rules as keys and arrays the corresponding G1 rules on the right hand side as values"
 }
 
 sub options {

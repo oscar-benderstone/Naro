@@ -1,0 +1,4 @@
+expr = equality | 
+equality = string '=' string
+string = _squote char* _squote
+char ~ [\w]*

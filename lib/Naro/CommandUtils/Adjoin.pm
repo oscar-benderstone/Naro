@@ -2,7 +2,7 @@ package Naro::CommandUtils::Adjoin;
 
 use Naro::Syntax::Adjoiner;
 
-our $VERSION = 'v0.3.0';
+our $VERSION = 'v0.4.0';
 
 sub options {
   (

@@ -3,8 +3,9 @@ package Naro::Command::expand;
 use strict;
 use warnings;
 use Naro -command;
+use Naro::CommandUtils::Expand;
 
-our $VERSION = 'v0.3.0';
+our $VERSION = 'v0.4.0';
 
 sub abstract {
   "evaluate any EBNF shorthands or custom macros"
@@ -15,14 +16,16 @@ sub description {
 }
 
 sub options {
-  Naro::CommandUtils::Expand::options()
+  return Naro::CommandUtils::Expand::options();
 }
 
 sub validate {
-  my ($self, $args) = @_; 
+  my ($self, $opt, $args) = @_; 
+  Naro::CommandUtils::Expand::validate($self, $opt, $args);
 }
 
 sub execute_inner {
   my ($self, $opt, $args) = @_;
-  Naro::CommandUtils::Expand::execute($self, $opt, $args);
+
+  Naro::CommandUtils::Expand::execute($opt, $args);
 }

@@ -5,7 +5,7 @@ use warnings;
 use App::Cmd::Setup -app;
 
 
-our $VERSION = 'v0.3.0';
+our $VERSION = 'v0.4.0';
 
 
 1;
